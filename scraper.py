@@ -6,8 +6,8 @@ import urllib2, csv
 import mechanize
 from bs4 import BeautifulSoup
 
-# output = open('electionresults.csv', 'w')
-# writer = csv.writer(output)
+output = open('data.csv', 'w')
+writer = csv.writer(output)
 # Open the Secretary of State's election results archives
 br = mechanize.Browser()
 br.open('http://enrarchives.sos.mo.gov/enrnet/')
@@ -40,5 +40,38 @@ control.value = ['460006719']
 # 'Choose election' and 'Submit'
 br.submit('ctl00$MainContent$btnCountyChange')
 
-print br.response().read()
+# Reading updated page with table
+html = br.response().read()
 
+# Bringing in BeautifulSoup from class example
+soup = BeautifulSoup(html, "html.parser")
+
+###### 
+# Time to get the tables and their headers
+######
+
+# Picking out the first table w/ overall election results 
+# by candidate
+first_table = soup.find('table', 
+	{'id': 'MainContent_dgrdRaceResults'}
+)
+
+# Encoding the cell text as UTF-8 to keep Python from freaking out on me
+# about ASCII
+for row in first_table.find_all('tr'):
+	headers = [cell.text.encode('utf-8') for cell in row.find_all('th')]
+	candidates = [cell.text.encode('utf-8') for cell in row.find_all('td')]
+	writer.writerow(headers)
+	writer.writerow(candidates)
+
+# Picking out the second table w/ county-by-county results
+second_table = soup.find('table',
+    {'id': 'MainContent_dgrdCountyRaceResults'}
+)
+
+
+for row in second_table.find_all('tr'):
+    headers = [cell.text.encode('utf-8') for cell in row.find_all('th')]
+    counties = [cell.text.encode('utf-8') for cell in row.find_all('td')]
+    writer.writerow(headers)
+    writer.writerow(counties)
