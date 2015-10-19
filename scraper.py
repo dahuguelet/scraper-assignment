@@ -42,5 +42,3 @@ br.submit('ctl00$MainContent$btnCountyChange')
 
 print br.response().read()
 
-# br.select_form['MainContent_cboRaces')
-
